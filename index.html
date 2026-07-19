@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RunModels — provider model cost desk</title>
+  <meta name="description" content="Select an AI provider and model to see pricing, VRAM, RAM, DGX Spark sizing, and private-running margin estimates." />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero panel">
+      <div class="hero__copy">
+        <p class="eyebrow"><i data-lucide="network"></i> Provider-first model desk</p>
+        <h1>Pick the company. Pick the model. Everything else follows.</h1>
+        <p class="lede">No manual knobs. Choose OpenAI, Anthropic, Qwen, Google, DeepSeek, Meta, Mistral, xAI, or Cohere, then select a model to see expected parameters, context, pricing, VRAM, RAM, DGX Spark sizing, and rough self-host margin.</p>
+      </div>
+      <div class="hero__card" aria-label="Selected provider and model summary">
+        <span id="providerType" class="stamp">Provider API</span>
+        <small id="providerName">Provider</small>
+        <strong id="heroModel">Select a model</strong>
+        <small id="heroHint">Model details update from provider metadata.</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <aside class="panel controls" aria-label="Provider and model controls">
+        <div class="section-title"><i data-lucide="building-2"></i><span>Selection</span></div>
+        <label>Provider
+          <select id="providerSelect"></select>
+        </label>
+        <label>Model
+          <select id="modelSelect"></select>
+        </label>
+        <p class="note">The app now uses provider/model metadata only. The displayed prices are planning references per million tokens; infrastructure estimates are intentionally conservative.</p>
+      </aside>
+
+      <section class="panel results" aria-live="polite">
+        <div class="section-title"><i data-lucide="receipt-text"></i><span>Provider model facts</span></div>
+        <div class="metrics six">
+          <article><i data-lucide="binary"></i><span>Parameters</span><strong id="paramsOut">—</strong></article>
+          <article><i data-lucide="braces"></i><span>Context</span><strong id="contextOut">—</strong></article>
+          <article><i data-lucide="hard-drive"></i><span>VRAM</span><strong id="vramOut">—</strong></article>
+          <article><i data-lucide="memory-stick"></i><span>RAM</span><strong id="ramOut">—</strong></article>
+          <article><i data-lucide="server"></i><span>DGX Spark</span><strong id="sparkOut">—</strong></article>
+          <article><i data-lucide="arrow-left-right"></i><span>Input</span><strong id="inputOut">—</strong></article>
+        </div>
+        <div class="profit-card split">
+          <div><span class="label">Provider output price</span><strong id="outputOut">—</strong></div>
+          <div><span class="label">Blended API price</span><strong id="blendedOut">—</strong></div>
+          <div><span class="label">Private run cost</span><strong id="privateOut">—</strong></div>
+          <div><span class="label">Profit vs API</span><strong id="profitOut">—</strong></div>
+          <div><span class="label">Margin</span><strong id="marginOut">—</strong></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="section-title"><i data-lucide="table-2"></i><span>Models for selected provider</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Model</th><th>Params</th><th>Context</th><th>Input / output $ per M</th><th>VRAM</th><th>DGX Spark</th></tr></thead>
+          <tbody id="modelTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
