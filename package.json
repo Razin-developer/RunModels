@@ -1,0 +1,18 @@
+{
+  "name": "runmodels-cost-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A minimal black-and-white AI model running cost calculator ready for Vercel static hosting.",
+  "scripts": {
+    "build": "node --check app.js",
+    "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000"
+  },
+  "keywords": [
+    "ai",
+    "inference",
+    "calculator",
+    "vercel"
+  ],
+  "license": "UNLICENSED"
+}
