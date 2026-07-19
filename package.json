@@ -4,7 +4,7 @@
   "private": true,
   "description": "A minimal black-and-white AI model running cost calculator ready for Vercel static hosting.",
   "scripts": {
-    "build": "node --check app.js",
+    "build": "rm -rf public && mkdir -p public && cp index.html styles.css app.js public/ && node --check public/app.js",
     "dev": "python3 -m http.server 3000",
     "start": "python3 -m http.server 3000"
   },
