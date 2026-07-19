@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RunModels — AI model running cost calculator</title>
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero panel">
+      <div class="hero__copy">
+        <p class="eyebrow"><i data-lucide="cpu"></i> RunModels micro calculator</p>
+        <h1>Black-and-white AI inference cost desk.</h1>
+        <p class="lede">Estimate VRAM, system RAM, DGX Spark units, compute expense, and margin against OpenRouter-style per-million-token pricing for 30 current frontier and open-weight models.</p>
+      </div>
+      <div class="hero__card" aria-label="Selected model summary">
+        <span class="stamp">weighted</span>
+        <strong id="heroModel">Select a model</strong>
+        <small id="heroHint">Costs update live as you edit assumptions.</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <aside class="panel controls" aria-label="Calculator controls">
+        <div class="section-title"><i data-lucide="sliders-horizontal"></i><span>Inputs</span></div>
+        <label>Model
+          <select id="modelSelect"></select>
+        </label>
+        <div class="two">
+          <label>Quantization
+            <select id="quantSelect">
+              <option value="2">FP16 / BF16</option>
+              <option value="1">INT8</option>
+              <option value="0.5" selected>INT4</option>
+            </select>
+          </label>
+          <label>Context length
+            <input id="contextInput" type="number" min="1024" step="1024" value="8192" />
+          </label>
+        </div>
+        <div class="two">
+          <label>Tokens / month
+            <input id="volumeInput" type="number" min="1000000" step="1000000" value="100000000" />
+          </label>
+          <label>Utilization %
+            <input id="utilInput" type="number" min="5" max="95" step="5" value="45" />
+          </label>
+        </div>
+        <div class="two">
+          <label>GPU $ / hour
+            <input id="gpuCostInput" type="number" min="0" step="0.05" value="3.2" />
+          </label>
+          <label>DGX Spark $ / month
+            <input id="sparkCostInput" type="number" min="0" step="10" value="420" />
+          </label>
+        </div>
+        <p class="note">Heuristic estimates for planning, not vendor benchmarks. VRAM includes weights, KV cache, and 18% runtime overhead.</p>
+      </aside>
+
+      <section class="panel results" aria-live="polite">
+        <div class="section-title"><i data-lucide="activity"></i><span>Live estimate</span></div>
+        <div class="metrics">
+          <article><i data-lucide="hard-drive"></i><span>VRAM</span><strong id="vramOut">—</strong></article>
+          <article><i data-lucide="memory-stick"></i><span>RAM</span><strong id="ramOut">—</strong></article>
+          <article><i data-lucide="server"></i><span>DGX Spark</span><strong id="sparkOut">—</strong></article>
+          <article><i data-lucide="coins"></i><span>Cost / M tok</span><strong id="costOut">—</strong></article>
+        </div>
+        <div class="profit-card">
+          <div>
+            <span class="label">Estimated monthly profit</span>
+            <strong id="profitOut">—</strong>
+          </div>
+          <div>
+            <span class="label">OpenRouter reference</span>
+            <strong id="priceOut">—</strong>
+          </div>
+        </div>
+        <div class="bar"><span id="marginBar"></span></div>
+        <p id="marginText" class="note"></p>
+      </section>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="section-title"><i data-lucide="list-tree"></i><span>Trending model sheet</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Model</th><th>Params</th><th>Compute</th><th>OpenRouter $/M</th><th>Fit</th></tr></thead>
+          <tbody id="modelTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
