@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RunModels — AI model running cost calculator</title>
-  <meta name="description" content="Estimate AI model VRAM, RAM, DGX Spark units, compute cost, and OpenRouter-style profit margins." />
+  <title>RunModels — provider model cost desk</title>
+  <meta name="description" content="Select an AI provider and model to see pricing, VRAM, RAM, DGX Spark sizing, and private-running margin estimates." />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="./styles.css" />
   <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -14,82 +14,55 @@
   <main class="shell">
     <section class="hero panel">
       <div class="hero__copy">
-        <p class="eyebrow"><i data-lucide="cpu"></i> RunModels micro calculator</p>
-        <h1>Black-and-white AI inference cost desk.</h1>
-        <p class="lede">Estimate VRAM, system RAM, DGX Spark units, compute expense, and margin against OpenRouter-style per-million-token pricing for 30 current frontier and open-weight models.</p>
+        <p class="eyebrow"><i data-lucide="network"></i> Provider-first model desk</p>
+        <h1>Pick the company. Pick the model. Everything else follows.</h1>
+        <p class="lede">No manual knobs. Choose OpenAI, Anthropic, Qwen, Google, DeepSeek, Meta, Mistral, xAI, or Cohere, then select a model to see expected parameters, context, pricing, VRAM, RAM, DGX Spark sizing, and rough self-host margin.</p>
       </div>
-      <div class="hero__card" aria-label="Selected model summary">
-        <span class="stamp">weighted</span>
+      <div class="hero__card" aria-label="Selected provider and model summary">
+        <span id="providerType" class="stamp">Provider API</span>
+        <small id="providerName">Provider</small>
         <strong id="heroModel">Select a model</strong>
-        <small id="heroHint">Costs update live as you edit assumptions.</small>
+        <small id="heroHint">Model details update from provider metadata.</small>
       </div>
     </section>
 
     <section class="grid">
-      <aside class="panel controls" aria-label="Calculator controls">
-        <div class="section-title"><i data-lucide="sliders-horizontal"></i><span>Inputs</span></div>
+      <aside class="panel controls" aria-label="Provider and model controls">
+        <div class="section-title"><i data-lucide="building-2"></i><span>Selection</span></div>
+        <label>Provider
+          <select id="providerSelect"></select>
+        </label>
         <label>Model
           <select id="modelSelect"></select>
         </label>
-        <div class="two">
-          <label>Quantization
-            <select id="quantSelect">
-              <option value="2">FP16 / BF16</option>
-              <option value="1">INT8</option>
-              <option value="0.5" selected>INT4</option>
-            </select>
-          </label>
-          <label>Context length
-            <input id="contextInput" type="number" min="1024" step="1024" value="8192" />
-          </label>
-        </div>
-        <div class="two">
-          <label>Tokens / month
-            <input id="volumeInput" type="number" min="1000000" step="1000000" value="100000000" />
-          </label>
-          <label>Utilization %
-            <input id="utilInput" type="number" min="5" max="95" step="5" value="45" />
-          </label>
-        </div>
-        <div class="two">
-          <label>GPU $ / hour
-            <input id="gpuCostInput" type="number" min="0" step="0.05" value="3.2" />
-          </label>
-          <label>DGX Spark $ / month
-            <input id="sparkCostInput" type="number" min="0" step="10" value="420" />
-          </label>
-        </div>
-        <p class="note">Heuristic estimates for planning, not vendor benchmarks. VRAM includes weights, KV cache, and 18% runtime overhead.</p>
+        <p class="note">The app now uses provider/model metadata only. The displayed prices are planning references per million tokens; infrastructure estimates are intentionally conservative.</p>
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="section-title"><i data-lucide="activity"></i><span>Live estimate</span></div>
-        <div class="metrics">
+        <div class="section-title"><i data-lucide="receipt-text"></i><span>Provider model facts</span></div>
+        <div class="metrics six">
+          <article><i data-lucide="binary"></i><span>Parameters</span><strong id="paramsOut">—</strong></article>
+          <article><i data-lucide="braces"></i><span>Context</span><strong id="contextOut">—</strong></article>
           <article><i data-lucide="hard-drive"></i><span>VRAM</span><strong id="vramOut">—</strong></article>
           <article><i data-lucide="memory-stick"></i><span>RAM</span><strong id="ramOut">—</strong></article>
           <article><i data-lucide="server"></i><span>DGX Spark</span><strong id="sparkOut">—</strong></article>
-          <article><i data-lucide="coins"></i><span>Cost / M tok</span><strong id="costOut">—</strong></article>
+          <article><i data-lucide="arrow-left-right"></i><span>Input</span><strong id="inputOut">—</strong></article>
         </div>
-        <div class="profit-card">
-          <div>
-            <span class="label">Estimated monthly profit</span>
-            <strong id="profitOut">—</strong>
-          </div>
-          <div>
-            <span class="label">OpenRouter reference</span>
-            <strong id="priceOut">—</strong>
-          </div>
+        <div class="profit-card split">
+          <div><span class="label">Provider output price</span><strong id="outputOut">—</strong></div>
+          <div><span class="label">Blended API price</span><strong id="blendedOut">—</strong></div>
+          <div><span class="label">Private run cost</span><strong id="privateOut">—</strong></div>
+          <div><span class="label">Profit vs API</span><strong id="profitOut">—</strong></div>
+          <div><span class="label">Margin</span><strong id="marginOut">—</strong></div>
         </div>
-        <div class="bar"><span id="marginBar"></span></div>
-        <p id="marginText" class="note"></p>
       </section>
     </section>
 
     <section class="panel table-panel">
-      <div class="section-title"><i data-lucide="list-tree"></i><span>Trending model sheet</span></div>
+      <div class="section-title"><i data-lucide="table-2"></i><span>Models for selected provider</span></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Model</th><th>Params</th><th>Compute</th><th>OpenRouter $/M</th><th>Fit</th></tr></thead>
+          <thead><tr><th>Model</th><th>Params</th><th>Context</th><th>Input / output $ per M</th><th>VRAM</th><th>DGX Spark</th></tr></thead>
           <tbody id="modelTable"></tbody>
         </table>
       </div>

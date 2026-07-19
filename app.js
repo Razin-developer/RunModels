@@ -1,69 +1,141 @@
-const models = [
-  ['Llama 3.1 8B',8,'~55 tok/s on L4/A10G',0.18],['Gemma 2 9B',9,'~50 tok/s on L4/A10G',0.20],['Mistral Nemo 12B',12,'~42 tok/s on L40S',0.22],['Qwen2.5 14B',14,'~38 tok/s on L40S',0.24],['Phi-4 14B',14,'~40 tok/s on L40S',0.28],['DeepSeek R1 Distill 14B',14,'~36 tok/s on L40S',0.35],['Llama 3.3 70B',70,'~18 tok/s on 2×A100',0.88],['Qwen2.5 72B',72,'~17 tok/s on 2×A100',0.90],['Mixtral 8x7B',47,'~24 tok/s on A100',0.70],['Mixtral 8x22B',141,'~11 tok/s on 4×A100',1.20],['Command R+',104,'~13 tok/s on 4×A100',1.35],['DBRX Instruct',132,'~10 tok/s on 4×A100',1.40],['Yi Large',34,'~28 tok/s on A100',0.55],['Jamba 1.5 Mini',12,'~45 tok/s on L40S',0.25],['Jamba 1.5 Large',94,'~14 tok/s on 4×A100',1.15],['Qwen2.5 Coder 32B',32,'~30 tok/s on A100',0.45],['Codestral 22B',22,'~34 tok/s on L40S/A100',0.30],['StarCoder2 15B',15,'~37 tok/s on L40S',0.20],['DeepSeek Coder V2 Lite',16,'~35 tok/s on L40S',0.28],['DeepSeek V3',671,'MoE, ~28 tok/s on 8×H100',1.25],['DeepSeek R1',671,'MoE, ~20 tok/s on 8×H100',2.20],['Kimi K2',1000,'MoE, cluster grade',2.50],['Llama 4 Scout',109,'MoE, ~30 tok/s on H100',0.75],['Llama 4 Maverick',400,'MoE, ~22 tok/s on 8×H100',1.80],['Grok 3 Mini',32,'API reference class',0.35],['Claude 3.5 Haiku',20,'API reference class',0.80],['Claude Sonnet 4',200,'API reference class',3.00],['GPT-4o mini',8,'API reference class',0.15],['GPT-4.1',200,'API reference class',2.00],['Gemini 2.5 Pro',300,'API reference class',2.50]
-].map(([name, params, compute, price]) => ({ name, params, compute, price }));
+const providers = {
+  openai: {
+    name: 'OpenAI', icon: 'sparkles', color: 'Provider API', models: [
+      { name: 'GPT-4.1', params: 200, context: 1000, input: 2.00, output: 8.00, vram: 512, ram: 768, compute: 'hosted frontier reasoning' },
+      { name: 'GPT-4.1 mini', params: 40, context: 1000, input: 0.40, output: 1.60, vram: 96, ram: 160, compute: 'hosted low-latency general use' },
+      { name: 'GPT-4o mini', params: 8, context: 128, input: 0.15, output: 0.60, vram: 24, ram: 48, compute: 'hosted budget multimodal' }
+    ]
+  },
+  anthropic: {
+    name: 'Anthropic', icon: 'shield', color: 'Provider API', models: [
+      { name: 'Claude Sonnet 4', params: 200, context: 200, input: 3.00, output: 15.00, vram: 640, ram: 960, compute: 'hosted coding and agentic work' },
+      { name: 'Claude 3.5 Haiku', params: 20, context: 200, input: 0.80, output: 4.00, vram: 64, ram: 96, compute: 'hosted fast assistant tier' },
+      { name: 'Claude Opus 4', params: 400, context: 200, input: 15.00, output: 75.00, vram: 1200, ram: 1800, compute: 'hosted premium reasoning' }
+    ]
+  },
+  qwen: {
+    name: 'Qwen', icon: 'bot', color: 'Open weight/API', models: [
+      { name: 'Qwen2.5 72B Instruct', params: 72, context: 128, input: 0.35, output: 0.40, vram: 86, ram: 140, compute: '1×H100 or 2×L40S at INT4' },
+      { name: 'Qwen2.5 Coder 32B', params: 32, context: 128, input: 0.18, output: 0.18, vram: 42, ram: 72, compute: 'single L40S/A100 at INT4' },
+      { name: 'Qwen3 235B A22B', params: 235, context: 128, input: 0.60, output: 1.80, vram: 300, ram: 460, compute: 'MoE multi-GPU serving' }
+    ]
+  },
+  google: {
+    name: 'Google', icon: 'gem', color: 'Provider API', models: [
+      { name: 'Gemini 2.5 Pro', params: 300, context: 1000, input: 1.25, output: 10.00, vram: 900, ram: 1300, compute: 'hosted long-context reasoning' },
+      { name: 'Gemini 2.5 Flash', params: 60, context: 1000, input: 0.30, output: 2.50, vram: 180, ram: 280, compute: 'hosted fast multimodal' },
+      { name: 'Gemma 2 27B', params: 27, context: 8, input: 0.15, output: 0.15, vram: 36, ram: 64, compute: 'single prosumer/server GPU at INT4' }
+    ]
+  },
+  deepseek: {
+    name: 'DeepSeek', icon: 'workflow', color: 'Open weight/API', models: [
+      { name: 'DeepSeek R1', params: 671, context: 128, input: 0.55, output: 2.19, vram: 720, ram: 1100, compute: 'MoE 8×H100 class' },
+      { name: 'DeepSeek V3', params: 671, context: 128, input: 0.27, output: 1.10, vram: 690, ram: 1050, compute: 'MoE 8×H100 class' },
+      { name: 'DeepSeek R1 Distill Qwen 14B', params: 14, context: 64, input: 0.10, output: 0.10, vram: 18, ram: 32, compute: 'single 24GB GPU at INT4' }
+    ]
+  },
+  meta: {
+    name: 'Meta', icon: 'layers', color: 'Open weight', models: [
+      { name: 'Llama 3.3 70B', params: 70, context: 128, input: 0.35, output: 0.40, vram: 84, ram: 136, compute: '1×H100 or 2×L40S at INT4' },
+      { name: 'Llama 4 Scout', params: 109, context: 10000, input: 0.18, output: 0.59, vram: 140, ram: 220, compute: 'MoE long-context serving' },
+      { name: 'Llama 4 Maverick', params: 400, context: 1000, input: 0.27, output: 0.85, vram: 480, ram: 760, compute: 'MoE multi-GPU serving' }
+    ]
+  },
+  mistral: {
+    name: 'Mistral', icon: 'wind', color: 'Open weight/API', models: [
+      { name: 'Mistral Large', params: 123, context: 128, input: 2.00, output: 6.00, vram: 160, ram: 250, compute: 'hosted or multi-GPU private' },
+      { name: 'Mixtral 8x22B', params: 141, context: 64, input: 0.90, output: 0.90, vram: 175, ram: 270, compute: 'MoE 4×A100 class' },
+      { name: 'Codestral 22B', params: 22, context: 32, input: 0.30, output: 0.30, vram: 30, ram: 52, compute: 'single L40S for code' }
+    ]
+  },
+  xai: {
+    name: 'xAI', icon: 'orbit', color: 'Provider API', models: [
+      { name: 'Grok 3', params: 300, context: 128, input: 3.00, output: 15.00, vram: 900, ram: 1300, compute: 'hosted premium reasoning' },
+      { name: 'Grok 3 Mini', params: 32, context: 128, input: 0.30, output: 0.50, vram: 48, ram: 80, compute: 'hosted compact reasoning' },
+      { name: 'Grok 4', params: 400, context: 256, input: 3.00, output: 15.00, vram: 1200, ram: 1800, compute: 'hosted frontier reasoning' }
+    ]
+  },
+  cohere: {
+    name: 'Cohere', icon: 'boxes', color: 'Provider API', models: [
+      { name: 'Command R+', params: 104, context: 128, input: 2.50, output: 10.00, vram: 132, ram: 210, compute: 'hosted RAG and tool use' },
+      { name: 'Command R', params: 35, context: 128, input: 0.15, output: 0.60, vram: 46, ram: 76, compute: 'hosted enterprise RAG' },
+      { name: 'Aya Expanse 32B', params: 32, context: 8, input: 0.50, output: 1.50, vram: 42, ram: 72, compute: 'multilingual serving tier' }
+    ]
+  }
+};
 
 const $ = (id) => document.getElementById(id);
-const fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
-const bigMoney = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const number = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
-function requiredVram(model, bytes, context) {
-  const weights = model.params * bytes;
-  const kv = Math.max(1.2, model.params * 0.006 * (context / 1024));
-  return (weights + kv) * 1.18;
+function selectedProvider() { return providers[$('providerSelect').value]; }
+function selectedModel() { return selectedProvider().models[$('modelSelect').value]; }
+function sparkUnits(model) { return Math.max(1, Math.ceil(model.vram / 128)); }
+function blendedPrice(model) { return (model.input * 0.45) + (model.output * 0.55); }
+function privateCost(model) {
+  const sparkMonthly = sparkUnits(model) * 420;
+  const baselineMillionTokens = 100;
+  return (sparkMonthly / baselineMillionTokens) + Math.max(0.05, model.params / 900);
 }
-function modelThroughput(model, vram) {
-  const base = 92 / Math.sqrt(Math.max(model.params, 4));
-  const penalty = Math.max(1, vram / 96);
-  return Math.max(1.8, base / penalty);
+function margin(model) {
+  const revenue = blendedPrice(model);
+  const cost = privateCost(model);
+  return Math.round(((revenue - cost) / revenue) * 100);
 }
-function calculate() {
-  const model = models[$('modelSelect').value];
-  const bytes = Number($('quantSelect').value);
-  const context = Number($('contextInput').value);
-  const monthlyTokens = Number($('volumeInput').value);
-  const util = Number($('utilInput').value) / 100;
-  const gpuHour = Number($('gpuCostInput').value);
-  const sparkMonth = Number($('sparkCostInput').value);
-  const vram = requiredVram(model, bytes, context);
-  const ram = Math.max(16, vram * 1.55);
-  const sparks = Math.max(1, Math.ceil(vram / 128));
-  const throughput = modelThroughput(model, vram) * sparks * util;
-  const hoursPerM = 1_000_000 / (throughput * 3600);
-  const computeCostM = hoursPerM * gpuHour + (sparkMonth * sparks / Math.max(monthlyTokens / 1_000_000, 1));
-  const revenue = model.price * monthlyTokens / 1_000_000;
-  const expense = computeCostM * monthlyTokens / 1_000_000;
-  const profit = revenue - expense;
-  const margin = revenue > 0 ? Math.max(0, Math.min(100, (profit / revenue) * 100)) : 0;
 
+function renderProviders() {
+  $('providerSelect').innerHTML = Object.entries(providers)
+    .map(([key, provider]) => `<option value="${key}">${provider.name}</option>`).join('');
+}
+function renderModels() {
+  const provider = selectedProvider();
+  $('modelSelect').innerHTML = provider.models
+    .map((model, index) => `<option value="${index}">${model.name}</option>`).join('');
+}
+function renderCards() {
+  const provider = selectedProvider();
+  const model = selectedModel();
+  const profit = blendedPrice(model) - privateCost(model);
+  $('providerName').textContent = provider.name;
+  $('providerType').textContent = provider.color;
   $('heroModel').textContent = model.name;
-  $('heroHint').textContent = `${fmt.format(model.params)}B params · ${model.compute}`;
-  $('vramOut').textContent = `${fmt.format(vram)} GB`;
-  $('ramOut').textContent = `${fmt.format(ram)} GB`;
-  $('sparkOut').textContent = `${sparks} unit${sparks > 1 ? 's' : ''}`;
-  $('costOut').textContent = money.format(computeCostM);
-  $('profitOut').textContent = bigMoney.format(profit);
-  $('priceOut').textContent = `${money.format(model.price)} / M`;
-  $('marginBar').style.width = `${margin}%`;
-  $('marginText').textContent = `${fmt.format(margin)}% gross margin at ${fmt.format(monthlyTokens / 1_000_000)}M tokens/month; estimated expense ${bigMoney.format(expense)} vs revenue ${bigMoney.format(revenue)}.`;
-  renderTable(vram);
+  $('heroHint').textContent = `${number.format(model.params)}B params · ${number.format(model.context)}K context · ${model.compute}`;
+  $('paramsOut').textContent = `${number.format(model.params)}B`;
+  $('contextOut').textContent = `${number.format(model.context)}K`;
+  $('vramOut').textContent = `${number.format(model.vram)} GB`;
+  $('ramOut').textContent = `${number.format(model.ram)} GB`;
+  $('sparkOut').textContent = `${sparkUnits(model)} unit${sparkUnits(model) > 1 ? 's' : ''}`;
+  $('inputOut').textContent = `${money.format(model.input)} / M`;
+  $('outputOut').textContent = `${money.format(model.output)} / M`;
+  $('blendedOut').textContent = `${money.format(blendedPrice(model))} / M`;
+  $('privateOut').textContent = `${money.format(privateCost(model))} / M`;
+  $('profitOut').textContent = `${money.format(profit)} / M`;
+  $('marginOut').textContent = `${margin(model)}%`;
+  renderTable(provider);
+  if (window.lucide) window.lucide.createIcons();
 }
-function renderTable(selectedVram = 0) {
-  $('modelTable').innerHTML = models.map((m, i) => {
-    const fit = requiredVram(m, Number($('quantSelect').value || 0.5), Number($('contextInput').value || 8192)) <= 128;
-    return `<tr><td>${m.name}</td><td>${fmt.format(m.params)}B</td><td>${m.compute}</td><td>${money.format(m.price)}</td><td><button class="fit ${fit ? 'ok' : 'no'}" data-index="${i}">${fit ? '1 Spark' : 'multi Spark'}</button></td></tr>`;
-  }).join('');
-  document.querySelectorAll('.fit').forEach((button) => button.addEventListener('click', () => {
+function renderTable(provider) {
+  $('modelTable').innerHTML = provider.models.map((model, index) => `
+    <tr>
+      <td><button class="model-button" data-index="${index}">${model.name}</button></td>
+      <td>${number.format(model.params)}B</td>
+      <td>${number.format(model.context)}K</td>
+      <td>${money.format(model.input)} / ${money.format(model.output)}</td>
+      <td>${number.format(model.vram)} GB</td>
+      <td>${sparkUnits(model)}</td>
+    </tr>`).join('');
+  document.querySelectorAll('.model-button').forEach((button) => button.addEventListener('click', () => {
     $('modelSelect').value = button.dataset.index;
-    calculate();
-    scrollTo({ top: 0, behavior: 'smooth' });
+    renderCards();
   }));
 }
 function boot() {
-  $('modelSelect').innerHTML = models.map((m, i) => `<option value="${i}">${m.name} · ${m.params}B</option>`).join('');
-  $('modelSelect').value = '20';
-  document.querySelectorAll('input, select').forEach((el) => el.addEventListener('input', calculate));
-  calculate();
-  if (window.lucide) window.lucide.createIcons();
+  renderProviders();
+  $('providerSelect').value = 'anthropic';
+  renderModels();
+  $('modelSelect').value = '0';
+  $('providerSelect').addEventListener('change', () => { renderModels(); renderCards(); });
+  $('modelSelect').addEventListener('change', renderCards);
+  renderCards();
 }
 window.addEventListener('DOMContentLoaded', boot);
